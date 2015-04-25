@@ -42,20 +42,20 @@ def interpolate(old_trace, new_trace):
         return new_trace
 
     final_trace = []
-    new_ips = [t.ip for t in new_trace]
-    old_trace = old_trace.reverse()
+    new_ips = [t['ip'] for t in new_trace]
+    old_trace.reverse()
 
-    for trace in old_trace
-        if trace.ip not in new_ips:
+    for trace in old_trace:
+        if trace['ip'] not in new_ips:
             final_trace.append(trace)
         else:
             final_trace.append(trace)
             break
-    new_index = new_ips.index(trace[-1])
-    for trace in new_trace[new_index:]
+    new_index = new_ips.index(final_trace[-1]['ip'])
+    for trace in new_trace[new_index + 1:]:
         final_trace.append(trace)
 
-    return final_trace
+    return final_trace[1:]
 
 
 
@@ -67,4 +67,3 @@ for ip in ip_generator:
     final_trace = interpolate(old_trace, new_trace)
     # put final_trace somewhere
     old_trace = new_trace
-
