@@ -2,11 +2,11 @@
 # -*- coding: utf-8 -*-
 
 import re
+import time
 import json
 from time import sleep
 from subprocess import check_output
 from subprocess import CalledProcessError
-
 import requests
 
 def get_all_ips():
@@ -59,28 +59,67 @@ def interpolate(old_trace, new_trace):
     return final_trace[1:]
 
 # sends things to the server
-def send_to_redis(trace)
-    res = requests.post(, data=json.dumps(trace)
-    # return true / falsae as needed
+def send_to_redis(trace):
+    url = 'https://core-echoes.herokuapp.com/add_route'
+    res = requests.post(url, data=json.dumps(trace))
+    return res
+
+def delete_from_redis(trace):
+    url = 'https://core-echoes.herokuapp.com/delete_route'
+    res = requests.delete(url)
+    return res
+
+# IP times, in seconds
+def get_time_for_ip(ip):
+    numbers = ip.split('.')[0:3]
+    time = 0
+    for number in numbers:
+        for digit in number:
+            time = time + int(digit)
+    return time
+
+def get_time_for_trace(trace):
+    time = 0
+    for item in trace:
+        time = time + get_time_for_ip(item['ip'])
+    return time / 4
     
 
 trace = get_trace("56.33.199.10")
 res = send_to_redis(trace)
 
-## loop sketches:
-# ip_generator = get_all_ips()
-# next_ip = ip_generator.next()
-# old_trace = []
-# new_trace = []
-# while true:
-## check global Time here, remove the most recent trace from server if we're over the time generated it
-#     if server.is_full: ## or something
-         # wait for a piece?
-#         continue
-#     else:
-#         old_trace = trace(next_ip)
-#         final_trace = interpolate(old_trace, new_trace)
-#         # put final_trace somewhere:  server.put(final_trace)
-#         old_trace = new_trace
-#         next_ip = ip_genertor.next()
-# 
+
+
+
+if __name__ == '__main__':
+    old_trace = []
+    new_trace = []
+    ip_generator = get_all_ips()
+
+    next_ip = ip_generator.next()
+    new_trace  = trace(next_ip)
+    final_trace = interpolate(old_trace, new_trace)
+    send_to_redis(final_trace)
+    old_trace = new_trace
+
+    next_trace_time = get_time_for_trace(final_trace)
+    start_time = time.time()
+
+    while true:
+        # if we should move on to the next trace, remove the old trace
+        now = time.time()
+        if start_time + next_trace_time > now:
+            next_trace = delete_from_redis() ## this needs to return the NEXT TRACE, so we can get the time for it.
+            next_trace_time = get_time_for_trace(next_trace)
+            start_time = now
+        
+        # main functionality
+        if server.is_full: ## HO HO HO
+            time.sleep(2)
+        else:
+            next_ip = ip_generator.next()
+            new_trace  = trace(next_ip)
+            final_trace = interpolate(old_trace, new_trace)
+            send_to_redis(final_trace)
+            old_trace = new_trace
+
