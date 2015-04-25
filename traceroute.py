@@ -36,9 +36,35 @@ def get_trace(ip):
 
     return ip, trace
 
+# Returns a path from old_trace to new_trace!
+def interpolate(old_trace, new_trace):
+    if old_trace == []:
+        return new_trace
+
+    final_trace = []
+    new_ips = [t.ip for t in new_trace]
+    old_trace = old_trace.reverse()
+
+    for trace in old_trace
+        if trace.ip not in new_ips:
+            final_trace.append(trace)
+        else:
+            final_trace.append(trace)
+            break
+    new_index = new_ips.index(trace[-1])
+    for trace in new_trace[new_index:]
+        final_trace.append(trace)
+
+    return final_trace
+
+
 
 ip_generator = get_all_ips()
+old_trace = []
+new_trace = []
 for ip in ip_generator:
-    last_ip, trace = get_trace(ip)
-    print trace
+    last_ip, new_trace = get_trace(ip)
+    final_trace = interpolate(old_trace, new_trace)
+    # put final_trace somewhere
+    old_trace = new_trace
 
