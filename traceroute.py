@@ -1,13 +1,12 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-# I need a function to ask for a trace to an IP, 
-# and then interpolate it with the previous trace.
-
-# and I need to wrap this all in something really robust
 
 import re
+from time import sleep
 from subprocess import check_output
+from subprocess import CalledProcessError
+
 
 def get_all_ips():
     for x1 in range(255):
@@ -18,7 +17,11 @@ def get_all_ips():
 
 def get_trace(ip):
     trace = []
-    res = check_output(['traceroute', '65.34.111.200'])
+    try:
+        res = check_output(['traceroute', ip])
+    except CalledProcessError:
+        res = ''
+
     lines = res.split('\n')
     for line in lines:
         res = re.search(r'\d  (.+)', line)
@@ -31,8 +34,11 @@ def get_trace(ip):
         ip = res.group(1)
         trace.append({'ip': ip, 'line_text': line_text})
 
-    return trace
+    return ip, trace
 
 
-trace = get_trace("test")
-print trace
+ip_generator = get_all_ips()
+for ip in ip_generator:
+    last_ip, trace = get_trace(ip)
+    print trace
+
