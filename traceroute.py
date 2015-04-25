@@ -2,9 +2,11 @@
 # -*- coding: utf-8 -*-
 
 import re
+import json
 from time import sleep
 from subprocess import check_output
 from subprocess import CalledProcessError
+
 import requests
 
 def get_all_ips():
@@ -56,8 +58,14 @@ def interpolate(old_trace, new_trace):
 
     return final_trace[1:]
 
+# sends things to the server
+def send_to_redis(trace)
+    res = requests.post(, data=json.dumps(trace)
+    # return true / falsae as needed
+    
 
-print get_trace("56.33.199.10")
+trace = get_trace("56.33.199.10")
+res = send_to_redis(trace)
 
 ## loop sketches:
 # ip_generator = get_all_ips()
@@ -65,7 +73,9 @@ print get_trace("56.33.199.10")
 # old_trace = []
 # new_trace = []
 # while true:
+## check global Time here, remove the most recent trace from server if we're over the time generated it
 #     if server.is_full: ## or something
+         # wait for a piece?
 #         continue
 #     else:
 #         old_trace = trace(next_ip)
