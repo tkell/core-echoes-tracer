@@ -1,12 +1,11 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-
 import re
 from time import sleep
 from subprocess import check_output
 from subprocess import CalledProcessError
-
+import requests
 
 def get_all_ips():
     for x1 in range(255):
@@ -34,7 +33,7 @@ def get_trace(ip):
         ip = res.group(1)
         trace.append({'ip': ip, 'line_text': line_text})
 
-    return ip, trace
+    return trace
 
 # Returns a path from old_trace to new_trace!
 def interpolate(old_trace, new_trace):
@@ -58,12 +57,20 @@ def interpolate(old_trace, new_trace):
     return final_trace[1:]
 
 
+print trace("56.33.199.10")
 
-ip_generator = get_all_ips()
-old_trace = []
-new_trace = []
-for ip in ip_generator:
-    last_ip, new_trace = get_trace(ip)
-    final_trace = interpolate(old_trace, new_trace)
-    # put final_trace somewhere
-    old_trace = new_trace
+## loop sketches:
+# ip_generator = get_all_ips()
+# next_ip = ip_generator.next()
+# old_trace = []
+# new_trace = []
+# while true:
+#     if server.is_full: ## or something
+#         continue
+#     else:
+#         old_trace = trace(next_ip)
+#         final_trace = interpolate(old_trace, new_trace)
+#         # put final_trace somewhere:  server.put(final_trace)
+#         old_trace = new_trace
+#         next_ip = ip_genertor.next()
+# 
