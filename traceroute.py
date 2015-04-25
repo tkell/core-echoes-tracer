@@ -57,7 +57,7 @@ def interpolate(old_trace, new_trace):
     return final_trace[1:]
 
 
-print trace("56.33.199.10")
+print get_trace("56.33.199.10")
 
 ## loop sketches:
 # ip_generator = get_all_ips()
