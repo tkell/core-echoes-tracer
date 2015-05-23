@@ -9,12 +9,35 @@ from subprocess import check_output
 from subprocess import CalledProcessError
 import requests
 
-# This needs some restrictions to avoid, say, 0.x.x.x, 127, etc
 # How do I deal with very short traceroutes?  There's a long-term race condition here...
 def get_all_ips():
-    for x1 in range(111, 255):
+    for x1 in range(1, 255):
+        if x1 == 10:
+            continue
+        if x1 == 127:
+            continue
+        if x1 == 192:
+            continue
+        if x1 == 198:
+            continue
+        if x1 == 224:
+            continue
+        if x1 == 240:
+            continue
         for x2 in range(255):
+            if x1 == 100 and x2 == 64:
+                continue
+            if x1 == 169 and x2 == 254:
+                continue
+            if x1 == 172 and x2 == 16:
+                continue
+            if x1 == 198 and x2 == 18:
+                continue
             for x3 in range(255):
+                if x1 == 198 and x2 == 51 and x3 == 100:
+                    continue
+                if x1 == 203 and x2 == 0 and x3 == 113:
+                    continue
                 for x4 in range(255):
                     yield "%s.%s.%s.%s" % (x1, x2, x3, x4)
 
