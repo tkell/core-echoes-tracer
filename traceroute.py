@@ -11,7 +11,7 @@ import requests
 
 # This needs some restrictions to avoid, say, 0.x.x.x, 127, etc
 def get_all_ips():
-    for x1 in range(255):
+    for x1 in range(11, 255):
         for x2 in range(255):
             for x3 in range(255):
                 for x4 in range(255):
@@ -53,6 +53,8 @@ def interpolate(old_trace, new_trace):
         else:
             final_trace.append(trace)
             break
+    if final_trace[-1]['ip'] not in new_ips:
+        return new_trace
     new_index = new_ips.index(final_trace[-1]['ip'])
     for trace in new_trace[new_index + 1:]:
         final_trace.append(trace)
@@ -92,36 +94,52 @@ def get_time_for_trace(trace):
     
 
 
+filler_count = 1
 if __name__ == '__main__':
-#     old_trace = []
-#     new_trace = []
-#     ip_generator = get_all_ips()
-# 
-#     next_ip = ip_generator.next()
-#     new_trace  = trace(next_ip)
-#     final_trace = interpolate(old_trace, new_trace)
-#     send_to_redis(final_trace)
-#     old_trace = new_trace
-# 
-#     next_trace_time = get_time_for_trace(final_trace)
-#     start_time = time.time()
-# 
-#     while true:
-#         # if we should move on to the next trace, remove the old trace
-#         now = time.time()
-#         if start_time + next_trace_time > now:
-#             next_trace = pop_from_redis() ## this needs to return the NEXT TRACE, so we can get the time for it.
-#             next_trace_time = get_time_for_trace(next_trace)
-#             start_time = now
-#         
-#         # main functionality
-#         count = get_server_count()
-#         if count > 100:
-#             time.sleep(2)
-#         else:
-#             next_ip = ip_generator.next()
-#             new_trace  = trace(next_ip)
-#             final_trace = interpolate(old_trace, new_trace)
-#             send_to_redis(final_trace)
-#             old_trace = new_trace
-# 
+    print "Setting up arrays and generators"    
+    old_trace = []
+    new_trace = []
+    ip_generator = get_all_ips()
+
+    first_trace = ''
+
+    print "getting %d initial traces" % filler_count
+    for x in range(filler_count): 
+        next_ip = ip_generator.next()
+        new_trace = get_trace(next_ip)
+        final_trace = interpolate(old_trace, new_trace)
+        send_to_redis(final_trace)
+        if x == 0:
+            first_trace = final_trace
+        old_trace = new_trace
+    
+    print "setting up time for first trace..." 
+    next_trace_time = get_time_for_trace(first_trace)
+    start_time = time.time()
+
+    print "next trace time is %d - starting while loop" % next_trace_time
+ 
+    while True:
+        # if we should move on to the next trace, remove the old trace
+        now = time.time()
+        print start_time, next_trace_time, now
+        if start_time + next_trace_time <= now:
+            print "timed out:  removing an old trace and getting the time for the next trace"
+            next_trace = pop_from_redis() ## this needs to return the NEXT TRACE, so we can get the time for it.
+            next_trace_time = get_time_for_trace(next_trace)
+            print "next trace time is %d" % next_trace_time
+            start_time = now
+        
+        # main functionality
+        count = get_count_from_redis()
+        if count > 5:
+            print "server has over 5 things, sleeping for 2 seconds"
+            time.sleep(2)
+        else:
+            print "server has fewer than 100 things, adding a trace"
+            next_ip = ip_generator.next()
+            new_trace = get_trace(next_ip)
+            final_trace = interpolate(old_trace, new_trace)
+            send_to_redis(final_trace)
+            old_trace = new_trace
+ 
