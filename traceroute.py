@@ -10,8 +10,9 @@ from subprocess import CalledProcessError
 import requests
 
 # This needs some restrictions to avoid, say, 0.x.x.x, 127, etc
+# How do I deal with very short traceroutes?  There's a long-term race condition here...
 def get_all_ips():
-    for x1 in range(11, 255):
+    for x1 in range(111, 255):
         for x2 in range(255):
             for x3 in range(255):
                 for x4 in range(255):
@@ -92,9 +93,7 @@ def get_time_for_trace(trace):
         time = time + get_time_for_ip(item['ip'])
     return time / 4
     
-
-
-filler_count = 1
+filler_count = 10
 if __name__ == '__main__':
     print "Setting up arrays and generators"    
     old_trace = []
@@ -115,6 +114,7 @@ if __name__ == '__main__':
     
     print "setting up time for first trace..." 
     next_trace_time = get_time_for_trace(first_trace)
+    print len(first_trace), next_trace_time
     start_time = time.time()
 
     print "next trace time is %d - starting while loop" % next_trace_time
@@ -122,18 +122,18 @@ if __name__ == '__main__':
     while True:
         # if we should move on to the next trace, remove the old trace
         now = time.time()
-        print start_time, next_trace_time, now
+        print now - start_time, next_trace_time
         if start_time + next_trace_time <= now:
             print "timed out:  removing an old trace and getting the time for the next trace"
-            next_trace = pop_from_redis() ## this needs to return the NEXT TRACE, so we can get the time for it.
+            next_trace = pop_from_redis()
             next_trace_time = get_time_for_trace(next_trace)
             print "next trace time is %d" % next_trace_time
             start_time = now
         
         # main functionality
         count = get_count_from_redis()
-        if count > 5:
-            print "server has over 5 things, sleeping for 2 seconds"
+        if count > 100:
+            print "server has %d things, sleeping for 2 seconds" % count
             time.sleep(2)
         else:
             print "server has fewer than 100 things, adding a trace"
