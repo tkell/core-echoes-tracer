@@ -100,21 +100,6 @@ def get_count_from_redis():
     url = 'https://core-echoes.herokuapp.com/count'
     res = requests.get(url)
     return res.json()['count']
-
-# IP times, in seconds
-def get_time_for_ip(ip):
-    numbers = ip.split('.')[0:3]
-    time = 0
-    for number in numbers:
-        for digit in number:
-            time = time + int(digit)
-    return time
-
-def get_time_for_trace(trace):
-    time = 0
-    for item in trace:
-        time = time + get_time_for_ip(item['ip'])
-    return time / 4
     
 filler_count = 10
 if __name__ == '__main__':
@@ -123,37 +108,18 @@ if __name__ == '__main__':
     new_trace = []
     ip_generator = get_all_ips()
 
-    first_trace = ''
-
     print "getting %d initial traces" % filler_count
     for x in range(filler_count): 
         next_ip = ip_generator.next()
         new_trace = get_trace(next_ip)
         final_trace = interpolate(old_trace, new_trace)
+        if len(final_trace) == 0:
+            continue
         send_to_redis(final_trace)
-        if x == 0:
-            first_trace = final_trace
         old_trace = new_trace
     
-    print "setting up time for first trace..." 
-    next_trace_time = get_time_for_trace(first_trace)
-    print len(first_trace), next_trace_time
-    start_time = time.time()
-
-    print "next trace time is %d - starting while loop" % next_trace_time
- 
     while True:
-        # if we should move on to the next trace, remove the old trace
-        now = time.time()
-        print now - start_time, next_trace_time
-        if start_time + next_trace_time <= now:
-            print "timed out:  removing an old trace and getting the time for the next trace"
-            next_trace = pop_from_redis()
-            next_trace_time = get_time_for_trace(next_trace)
-            print "next trace time is %d" % next_trace_time
-            start_time = now
-        
-        # main functionality
+        # Fill the server
         count = get_count_from_redis()
         if count > 100:
             print "server has %d things, sleeping for 2 seconds" % count
@@ -163,6 +129,8 @@ if __name__ == '__main__':
             next_ip = ip_generator.next()
             new_trace = get_trace(next_ip)
             final_trace = interpolate(old_trace, new_trace)
+            if len(final_trace) == 0:
+                continue
             send_to_redis(final_trace)
             old_trace = new_trace
  
