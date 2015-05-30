@@ -63,6 +63,7 @@ def get_trace(ip):
     return trace
 
 # Returns a path from old_trace to new_trace!
+# Deprecated.
 def interpolate(old_trace, new_trace):
     if old_trace == []:
         return new_trace
@@ -113,7 +114,7 @@ if __name__ == '__main__':
     for x in range(filler_count): 
         next_ip = ip_generator.next()
         new_trace = get_trace(next_ip)
-        final_trace = interpolate(old_trace, new_trace)
+        final_trace = new_trace
         if len(final_trace) == 0:
             continue
         send_to_redis(final_trace, next_ip)
