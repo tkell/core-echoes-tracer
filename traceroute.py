@@ -62,29 +62,11 @@ def get_trace(ip):
 
     return trace
 
-# Returns a path from old_trace to new_trace!
-# Deprecated.
-def interpolate(old_trace, new_trace):
-    if old_trace == []:
-        return new_trace
-
-    final_trace = []
-    new_ips = [t['ip'] for t in new_trace]
-    old_trace.reverse()
-
-    for trace in old_trace:
-        if trace['ip'] not in new_ips:
-            final_trace.append(trace)
-        else:
-            final_trace.append(trace)
-            break
-    if final_trace[-1]['ip'] not in new_ips:
-        return new_trace
-    new_index = new_ips.index(final_trace[-1]['ip'])
-    for trace in new_trace[new_index + 1:]:
-        final_trace.append(trace)
-
-    return final_trace[1:]
+# Just cuts the first two ips, as they're pure amazon
+def interpolate(new_trace):
+    if len(new_trace) > 2:
+        new_trace = new_trace[2:]
+    return new_trace
 
 # sends things to the server
 def send_to_redis(trace, target):
@@ -114,7 +96,7 @@ if __name__ == '__main__':
     for x in range(filler_count): 
         next_ip = ip_generator.next()
         new_trace = get_trace(next_ip)
-        final_trace = new_trace
+        final_trace = interpolate(new_trace)
         if len(final_trace) == 0:
             continue
         send_to_redis(final_trace, next_ip)
@@ -130,7 +112,7 @@ if __name__ == '__main__':
             print "server has fewer than 100 things, adding a trace"
             next_ip = ip_generator.next()
             new_trace = get_trace(next_ip)
-            final_trace = interpolate(old_trace, new_trace)
+            final_trace = interpolate(new_trace)
             if len(final_trace) == 0:
                 continue
             send_to_redis(final_trace, next_ip)
