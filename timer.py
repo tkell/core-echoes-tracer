@@ -43,7 +43,7 @@ if __name__ == '__main__':
     next_trace = get_from_redis()
     next_trace_time = get_time_for_trace(next_trace)
     start_time = time.time()
-    print "Starting. Time is %d" % start_time
+    print "Starting. Time is %d, next trace is %d" % (start_time, next_trace_time)
     while True:
         # if we should move on to the next trace, remove the old trace
         now = time.time()
