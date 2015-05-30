@@ -86,9 +86,10 @@ def interpolate(old_trace, new_trace):
     return final_trace[1:]
 
 # sends things to the server
-def send_to_redis(trace):
+def send_to_redis(trace, target):
+    data = {"target": target, "trace": trace}
     url = 'https://core-echoes.herokuapp.com/add_route'
-    res = requests.post(url, data=json.dumps(trace))
+    res = requests.post(url, data=json.dumps(data))
     return res
 
 def pop_from_redis():
@@ -115,7 +116,7 @@ if __name__ == '__main__':
         final_trace = interpolate(old_trace, new_trace)
         if len(final_trace) == 0:
             continue
-        send_to_redis(final_trace)
+        send_to_redis(final_trace, next_ip)
         old_trace = new_trace
     
     while True:
@@ -131,6 +132,6 @@ if __name__ == '__main__':
             final_trace = interpolate(old_trace, new_trace)
             if len(final_trace) == 0:
                 continue
-            send_to_redis(final_trace)
+            send_to_redis(final_trace, next_ip)
             old_trace = new_trace
  
