@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import re
+import sys
 import time
 import json
 from time import sleep
@@ -10,8 +11,10 @@ from subprocess import CalledProcessError
 import requests
 
 # How do I deal with very short traceroutes?  There's a long-term race condition here...
-def get_all_ips():
-    for x1 in range(1, 255):
+def get_all_ips(starting_ip):
+    ip_array = [int(ip) for ip in starting_ip.split('.')]
+
+    for x1 in range(ip_array[0], 255):
         if x1 == 10:
             continue
         if x1 == 127:
@@ -24,7 +27,7 @@ def get_all_ips():
             continue
         if x1 == 240:
             continue
-        for x2 in range(255):
+        for x2 in range(ip_array[1], 255):
             if x1 == 100 and x2 == 64:
                 continue
             if x1 == 169 and x2 == 254:
@@ -33,12 +36,12 @@ def get_all_ips():
                 continue
             if x1 == 198 and x2 == 18:
                 continue
-            for x3 in range(255):
+            for x3 in range(ip_array[2], 255):
                 if x1 == 198 and x2 == 51 and x3 == 100:
                     continue
                 if x1 == 203 and x2 == 0 and x3 == 113:
                     continue
-                for x4 in range(255):
+                for x4 in range(ip_array[3], 255):
                     yield "%s.%s.%s.%s" % (x1, x2, x3, x4)
 
 def get_trace(ip):
@@ -88,13 +91,15 @@ def get_count_from_redis():
 filler_count = 10
 if __name__ == '__main__':
     print "Setting up arrays and generators"    
+    starting_ip = sys.argv[1]
     old_trace = []
     new_trace = []
-    ip_generator = get_all_ips()
+    ip_generator = get_all_ips(starting_ip)
 
     print "getting %d initial traces" % filler_count
     for x in range(filler_count): 
         next_ip = ip_generator.next()
+        print next_ip
         new_trace = get_trace(next_ip)
         final_trace = interpolate(new_trace)
         if len(final_trace) == 0:
