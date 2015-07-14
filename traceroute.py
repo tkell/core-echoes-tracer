@@ -109,7 +109,10 @@ if __name__ == '__main__':
     
     while True:
         # Fill the server
-        count = get_count_from_redis()
+        try:
+            count = get_count_from_redis()
+        except requests.exceptions.ConnectionError:
+            time.sleep(4)
         if count > 100:
             print "server has %d things, sleeping for 2 seconds" % count
             time.sleep(2)
