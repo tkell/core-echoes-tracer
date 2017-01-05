@@ -14,7 +14,7 @@ import requests
 def get_all_ips(starting_ip):
     ip_array = [int(ip) for ip in starting_ip.split('.')]
 
-    for x1 in range(ip_array[0], 255):
+    for x1 in range(ip_array[0], 256):
         if x1 == 10:
             continue
         if x1 == 127:
@@ -27,7 +27,7 @@ def get_all_ips(starting_ip):
             continue
         if x1 == 240:
             continue
-        for x2 in range(ip_array[1], 255):
+        for x2 in range(ip_array[1], 256):
             if x1 == 100 and x2 == 64:
                 continue
             if x1 == 169 and x2 == 254:
@@ -36,12 +36,12 @@ def get_all_ips(starting_ip):
                 continue
             if x1 == 198 and x2 == 18:
                 continue
-            for x3 in range(ip_array[2], 255):
+            for x3 in range(ip_array[2], 256):
                 if x1 == 198 and x2 == 51 and x3 == 100:
                     continue
                 if x1 == 203 and x2 == 0 and x3 == 113:
                     continue
-                for x4 in range(ip_array[3], 255):
+                for x4 in range(ip_array[3], 256):
                     yield "%s.%s.%s.%s" % (x1, x2, x3, x4)
 
 def get_trace(ip):
